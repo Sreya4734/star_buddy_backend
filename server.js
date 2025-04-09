@@ -18,7 +18,7 @@ app.use(express.static('public')); // Serve static TTS files
 const STELLARIUM_API_URL = "http://localhost:8090/api/objects/info?format=json";
 const WIKI_API_URL_EN = "https://en.wikipedia.org/w/api.php?action=query&redirects&prop=extracts&explaintext&format=json&origin=*&titles=";
 
-mongoose.connect('mongodb://localhost:27017/starBuddy', {
+mongoose.connect('mongodb+srv://sre:sreya123@devapi.cvmpfgn.mongodb.net/starBuddy', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log("MongoDB connected"))
