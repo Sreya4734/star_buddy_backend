@@ -9,7 +9,8 @@ const { JSDOM } = require("jsdom");
 const textToSpeech = require('@google-cloud/text-to-speech');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
+
 
 app.use(cors({
   origin: ['https://starbuddy.netlify.app', "http://localhost:3000"], // Replace with your actual frontend URL
