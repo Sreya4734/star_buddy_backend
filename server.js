@@ -18,6 +18,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
 app.use(express.static('public')); // Serve static TTS files
 
 const STELLARIUM_API_URL = "http://localhost:8090/api/objects/info?format=json";
