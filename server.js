@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 
 
 app.use(cors({
-  origin: ['https://starbuddy.netlify.app', "http://localhost:3000"], // Replace with your actual frontend URL
+  origin: ['https://starbuddyy.netlify.app', "http://localhost:3000"], // Replace with your actual frontend URL
   methods: ['GET', 'POST'],
   credentials: true
 }));
