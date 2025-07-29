@@ -6,12 +6,13 @@ const fs = require('fs');
 const path = require('path');
 const translate = require('google-translate-api-x');
 const { JSDOM } = require("jsdom"); 
+const textToSpeech = require('@google-cloud/text-to-speech');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: ['https://starbuddyy.netlify.app', "http://localhost:3000"],
+  origin: ['https://starbuddyy.netlify.app', "http://localhost:3000"], // Replace with your actual frontend URL
   methods: ['GET', 'POST'],
   credentials: true
 }));
@@ -22,19 +23,18 @@ app.use(express.static('public')); // Serve static TTS files
 const STELLARIUM_API_URL = "http://localhost:8090/api/objects/info?format=json";
 const WIKI_API_URL_EN = "https://en.wikipedia.org/w/api.php?action=query&redirects&prop=extracts&explaintext&format=json&origin=*&titles=";
 
-// Connect to MongoDB
 mongoose.connect('mongodb+srv://sre:sreya123@devapi.cvmpfgn.mongodb.net/starBuddy', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
 
-// Student Query Schema
+// Student Query Schema (UPDATED)
 const studentQuerySchema = new mongoose.Schema({
   name: String,
   email: String,
-  phone: String,
-  query: String,
+  phone: String,       // <-- Added 'phone' field
+  query: String,       // <-- Renamed 'message' to 'query'
   date: { type: Date, default: Date.now },
 });
 
@@ -100,7 +100,6 @@ app.post('/api/queries', async (req, res) => {
 
 app.post('/save-object', async (req, res) => {
   try {
-    console.log("Processing /save-object without MongoDB storage");
     const stellariumData = req.body;
 
     if (!stellariumData || !stellariumData["localized-name"]) {
