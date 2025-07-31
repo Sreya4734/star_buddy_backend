@@ -165,7 +165,8 @@ app.post('/save-object', async (req, res) => {
 
       const tts_url = await generateTTSFile(name, fullText);
 
-      celestialObject = new CelestialObject({
+      // Object creation for response only – not saving to DB
+      celestialObject = {
         name,
         type,
         iauConstellation,
@@ -180,27 +181,38 @@ app.post('/save-object', async (req, res) => {
           telugu: desc_te,
         },
         tts_url,
-      });
+      };
 
-      await celestialObject.save();
-      console.log(`Saved new celestial object: ${name}`);
-    } else {
-      let fullText = `Name: ${celestialObject.name}. Type: ${celestialObject.type}. Constellation: ${celestialObject.iauConstellation}. Azimuth Angle: ${celestialObject.azimuthAngle} degrees. Altitude Angle: ${celestialObject.altitudeAngle} degrees. Description: ${celestialObject.description}`;
-
-      if (!celestialObject.tts_url) {
-        celestialObject.tts_url = await generateTTSFile(celestialObject.name, fullText);
-        await celestialObject.save();
-      }
+      console.log(`✅ Celestial object processed (not saved): ${name}`);
     }
 
-    const sessionLog = new SessionLog({
-      name: celestialObject.name,
-      type: celestialObject.type,
-      time: new Date().toLocaleTimeString(),
-    });
+    // Get current time in IST
+    const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
 
-    await sessionLog.save();
-    console.log(`Session logged for: ${name}`);
+    // Prevent log entry if within 10 minutes
+    const recentLog = await SessionLog.findOne({ name: celestialObject.name }).sort({ date: -1 });
+    const tenMinutes = 10 * 60 * 1000;
+    const shouldLog = !recentLog || (nowIST - new Date(recentLog.date)) > tenMinutes;
+
+    if (shouldLog) {
+      const sessionLog = {
+        name: celestialObject.name,
+        type: celestialObject.type,
+        date: nowIST, // correct IST Date
+        time: nowIST.toLocaleTimeString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          hour12: true,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        })
+      };
+
+      // Skipping: await SessionLog.create(sessionLog);
+      console.log(`✅ Session log (not saved): ${name}`);
+    } else {
+      console.log(`⚠️ Skipped log: ${name} already logged within 10 minutes`);
+    }
 
     return res.status(200).json({
       name: celestialObject.name,
@@ -214,11 +226,7 @@ app.post('/save-object', async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error processing object:", error);
+    console.error("❌ Error processing object:", error);
     return res.status(500).json({ error: "Server error while processing celestial object." });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
 });
